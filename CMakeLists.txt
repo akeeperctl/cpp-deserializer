@@ -12,4 +12,4 @@ add_custom_command(
 add_executable (Main
     "src/main.cpp"
     raw
-)
+  "src/types/integer.h" "src/types/float.h" "src/types/string.h" "src/types/vector.h" "src/types/any.h" "src/types/common.h" )

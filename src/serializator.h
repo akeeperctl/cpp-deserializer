@@ -1,3 +1,7 @@
+#pragma once
+#include "types/common.h"
+#include "types/any.h"
+
 class Serializator {
 public:
     template<typename Arg>
