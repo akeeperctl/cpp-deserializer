@@ -73,7 +73,7 @@ int main() {
     std::streamsize size = raw.tellg();
     raw.seekg(0, std::ios_base::beg);
 
-    Buffer buff(size);
+    buffer::type buff(size);
     raw.read(reinterpret_cast<char*>(buff.data()), size);
 
     auto res = Serializator::deserialize(buff);
