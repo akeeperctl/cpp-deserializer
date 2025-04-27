@@ -36,7 +36,7 @@ class SerializableValue
 public:
     using value_type = T;
     static const TypeId type_id = id;
-    explicit SerializableValue() = default;
+    explicit SerializableValue() : m_typeId(static_cast<Id>(id)) {};
 
     template<typename U, typename = std::enable_if_t<std::is_convertible_v<U, T>>>
     explicit SerializableValue(U&& _value)
