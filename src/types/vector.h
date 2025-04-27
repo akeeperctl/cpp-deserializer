@@ -14,11 +14,6 @@ public:
     {
     }
 
-    explicit VectorType(const value_type& _val)
-        : Parent(_val)
-    {
-    }
-
     template<typename... Args>
     explicit VectorType(Args&&... args)
     {
@@ -38,4 +33,5 @@ public:
             m_value.push_back(Any(std::forward<T>(value)));
         }
     }
+
 };

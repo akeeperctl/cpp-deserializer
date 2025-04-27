@@ -2,8 +2,8 @@
 #include "types/Any.h"
 #include "Serializator.h"
 #include <vector>
-#include <cstddef> // для std::byte
-#include <iomanip> // для std::hex
+#include <cstddef>
+#include <iomanip> 
 int main()
 {
     ////Any
@@ -49,41 +49,21 @@ int main()
     v4.push_back(StringType("gravity"));
     v4.push_back(VectorType(i2, f3));
 
-    //std::vector<FloatType> v5 = {};
-    //VectorType(v5);
-
-    // VectorType v7 = std::vector<Any>{1, 4, 6};
-
     setlocale(0, "RU");
     std::cout << "Инициализации всех типов прошли успешно\n";
 
     Serializator s;
-    s.push(VectorType(StringType("qwerty"), IntegerType(100500)));
+    //s.push(VectorType(StringType("qwerty"), IntegerType(100500)));
+
+
+    s.push(VectorType(IntegerType(100500), IntegerType(100500), IntegerType(100500)));
+    s.push(VectorType(StringType("invector")));
+    s.push(StringType("qwerty"));
+    s.push(IntegerType(100500));
     auto buffer = s.serialize();
     auto result = Serializator::deserialize(buffer);
 
-    std::cout << "{";
-
-    for (size_t i = 0; i < buffer.size(); ++i)
-    {
-        // Преобразуем std::byte в unsigned char и выводим в шестнадцатичном формате
-        std::cout << "0x" << std::hex << std::setfill('0') << std::setw(2)
-            << static_cast<int>(std::to_integer<unsigned char>(buffer[i]));
-
-        // Добавляем запятую, если это не последний элемент
-        if (i < buffer.size() - 1)
-        {
-            std::cout << ",";
-        }
-
-        // Добавляем перенос строки каждые 8 элементов для удобства
-        if ((i + 1) % 8 == 0)
-        {
-            std::cout << "\n ";
-        }
-    }
-
-    std::cout << "}" << std::endl;
+    //std::cout << "}" << std::endl;
     std::cout << bool(s.getStorage() == result);
 
     return 0;

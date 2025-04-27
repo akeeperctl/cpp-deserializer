@@ -38,15 +38,29 @@ public:
         std::visit(visitor, m_payload);
     }
 
-    buffer::iter deserialize(buffer::iter _begin, buffer::iter _end)
+    buffer::iter deserialize(buffer::iter& _begin, buffer::iter& _end)
     {
-        auto visitor = [&_begin, &_end](auto& payload)
-            {
-                return payload.deserialize(_begin, _end);
-            };
-        return std::visit(visitor, m_payload);
-    }
+        TypeId typeId = static_cast<TypeId>(buffer::_readLE<uint64_t>(_begin, _end));
+        switch (typeId)
+        {
+        case TypeId::Uint:
+            m_payload = buffer::read<IntegerType>(_begin, _end);
+            break;
+        case TypeId::Float:
+            m_payload = buffer::read<FloatType>(_begin, _end);
+            break;
+        case TypeId::String:
+            m_payload = buffer::read<StringType>(_begin, _end);
+            break;
+        case TypeId::Vector:
+            m_payload = buffer::read<VectorType>(_begin, _end);
+            break;
+        default:
+            throw std::runtime_error("Any: неизвестный TypeId");
+        }
 
+        return _begin; // Возвращаем итератор, указывающий на конец десериализации
+    }
     TypeId getPayloadTypeId() const
     {
         return static_cast<TypeId>(m_payload.index());
@@ -73,7 +87,9 @@ public:
             // Возвращаем ссылку на значение
             return std::get<static_cast<size_t>(kId)>(m_payload);
         }
-        throw std::bad_variant_access(); // Исключение, если тип не совпадает
+
+        // Исключение, если тип не совпадает
+        throw std::bad_variant_access();
     }
 
     bool operator == (const Any& _o) const
@@ -82,8 +98,8 @@ public:
     }
 
 private:
-    static auto resolve(uint64_t x) { return IntegerType(x); }
-    static auto resolve(double x) { return FloatType(x); }
+    static auto resolve(uint64_t&& x) { return IntegerType(std::move(x)); }
+    static auto resolve(double&& x) { return FloatType(std::move(x)); }
     static auto resolve(const char* x) { return StringType(x); }
     static auto resolve(const std::string& x) { return StringType(x); }
     static auto resolve(std::string&& x) { return StringType(std::move(x)); }
@@ -95,32 +111,30 @@ private:
     static auto resolve(VectorType& x) { return x; }
     static auto resolve(VectorType&& x) { return std::move(x); }
 
-    static auto resolve(const Any& a) { return a; }
-    static auto resolve(Any&& a) { return std::move(a); }
+    //static auto resolve(const Any& a) { return a; }
+    //static auto resolve(Any&& a) { return std::move(a); }
 
     Payload m_payload;
 };
 
 namespace buffer 
 {
-    // -------------------------------
-    // Перегрузка для std::vector<Any>
-    // -------------------------------
     template<>
     inline void writeLE(type& buf, const std::vector<Any>& v) 
     {
         // сначала количество элементов
         writeLE<uint64_t>(buf, v.size());
+
         // затем каждый Any сам себя сериализует
         for (auto const& a : v)
             a.serialize(buf);
     }
 
     template<>
-    inline std::vector<Any> readLE(iter& it, iter& end) 
+    inline std::vector<Any> _readLE(iter& it, iter& end) 
     {
         // читаем число элементов
-        auto count = readLE<uint64_t>(it, end);
+        auto count = _readLE<uint64_t>(it, end);
         std::vector<Any> v;
         v.reserve(count);
 
@@ -128,7 +142,7 @@ namespace buffer
         for (uint64_t i = 0; i < count; ++i) 
         {
             Any a;
-            it = a.deserialize(it, end);
+            a.deserialize(it, end);
             v.push_back(std::move(a));
         }
         return v;

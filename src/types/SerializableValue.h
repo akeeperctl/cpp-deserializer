@@ -36,7 +36,8 @@ class SerializableValue
 public:
     using value_type = T;
     static const TypeId type_id = id;
-    explicit SerializableValue() : m_typeId(static_cast<Id>(id)) {};
+
+    explicit SerializableValue() : m_typeId(static_cast<Id>(id)), m_value{} {};
 
     template<typename U, typename = std::enable_if_t<std::is_convertible_v<U, T>>>
     explicit SerializableValue(U&& _value)
@@ -50,10 +51,10 @@ public:
         buffer::writeLE<T>(_buff, m_value);
     };
 
-    buffer::iter deserialize(buffer::iter _begin, buffer::iter _end) 
+    buffer::iter deserialize(buffer::iter& _begin, buffer::iter& _end) 
     {
-        m_typeId = buffer::readLE<Id>(_begin, _end);
-        m_value = buffer::readLE<T>(_begin, _end);
+        m_typeId = buffer::_readLE<Id>(_begin, _end);
+        m_value = buffer::_readLE<T>(_begin, _end);
 
         return _begin;
     };

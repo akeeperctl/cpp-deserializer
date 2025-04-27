@@ -77,28 +77,12 @@ int main() {
     buffer::type buff(size);
     raw.read(reinterpret_cast<char*>(buff.data()), size);
 
-    try 
-    {
-        auto res = Serializator::deserialize(buff);
-        Serializator s;
-        for (auto&& i : res)
-            s.push(i);
+    auto res = Serializator::deserialize(buff);
+    Serializator s;
+    for (auto&& i : res)
+        s.push(i);
 
-        std::cout << (buff == s.serialize()) << '\n';
-    }
-    catch (const std::exception& e) 
-    {
-        setlocale(0, "RUS");
-        std::cerr << "Ошибка при десериализации: " << e.what() << "\n";
-        // Тут для отладки — распечатаем пару первых байт:
-        std::cerr << "buffer size = " << buff.size() << "\n";
-        for (size_t i = 0; i < std::min<size_t>(buff.size(), 16); ++i)
-            std::cerr << std::hex << std::setw(2) << std::setfill('0')
-            << static_cast<unsigned>(buff[i]) << " ";
-        std::cerr << std::dec << "\n";
-        throw;  // можно пробросить дальше
-    }
-
+    std::cout << (buff == s.serialize()) << '\n';
 
     return 0;
 }

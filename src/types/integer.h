@@ -1,6 +1,7 @@
 #pragma once
 #include <type_traits>
 #include "SerializableValue.h"
+#include "Buffer.h"
 
 
 class IntegerType: public SerializableValue<TypeId::Uint, uint64_t>
