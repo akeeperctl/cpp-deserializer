@@ -1,4 +1,5 @@
 #pragma once
+
 #include <variant>
 #include "Common.h"
 #include "Buffer.h"
@@ -6,6 +7,7 @@
 #include "String.h"
 #include "Integer.h"
 #include "Vector.h"
+
 
 using Payload = std::variant<IntegerType, FloatType, StringType, VectorType>;
 
@@ -20,8 +22,6 @@ class Any
 public:
 
     Any() : m_payload(IntegerType(0)) {};
-    Any(const Any&) = default;
-    Any(Any&&) = default;
 
     template<
         typename T,
@@ -52,13 +52,36 @@ public:
         return static_cast<TypeId>(m_payload.index());
     }
 
+    template<typename Type>
+    auto& getValue() const
+    {
+        // Проверяем, что тип соответствует загруженному типу
+        if (std::holds_alternative<std::decay_t<Type>>(m_payload))
+        {
+            // Возвращаем ссылку на значение
+            return std::get<std::decay_t<Type>>(m_payload);
+        }
+        throw std::bad_variant_access();
+    }
+
+    template<TypeId kId>
+    auto& getValue() const
+    {
+        // Проверяем, что тип соответствует загруженному типу по индексу
+        if (m_payload.index() == static_cast<size_t>(kId))
+        {
+            // Возвращаем ссылку на значение
+            return std::get<static_cast<size_t>(kId)>(m_payload);
+        }
+        throw std::bad_variant_access(); // Исключение, если тип не совпадает
+    }
+
     bool operator == (const Any& _o) const
     {
         return m_payload == _o.m_payload;
     }
 
 private:
-    static auto resolve(int x) { return IntegerType(x); }
     static auto resolve(uint64_t x) { return IntegerType(x); }
     static auto resolve(double x) { return FloatType(x); }
     static auto resolve(const char* x) { return StringType(x); }
@@ -78,31 +101,36 @@ private:
     Payload m_payload;
 };
 
-namespace buffer
+namespace buffer 
 {
-    /// <summary>
-    /// Записывает байты переменной в буфер.
-    /// </summary>
-    /// <param name="_buff вектор, куда идет запись байтов."></param>
-    /// <param name="_v вектор, который нужно записать в буфер"></param>
+    // -------------------------------
+    // Перегрузка для std::vector<Any>
+    // -------------------------------
     template<>
-    static void buffer::writeLE<std::vector<Any>>(buffer::type& _buff, const std::vector<Any>& _v)
+    inline void writeLE(type& buf, const std::vector<Any>& v) 
     {
-        writeLE<Id>(_buff, _v.size());
-        for (auto& element : _v)
-            element.serialize(_buff);
+        // сначала количество элементов
+        writeLE<uint64_t>(buf, v.size());
+        // затем каждый Any сам себя сериализует
+        for (auto const& a : v)
+            a.serialize(buf);
     }
 
     template<>
-    static std::vector<Any> readLE<std::vector<Any>>(buffer::iter& _begin, buffer::iter& _end)
+    inline std::vector<Any> readLE(iter& it, iter& end) 
     {
-        auto size = readLE<Id>(_begin, _end);
+        // читаем число элементов
+        auto count = readLE<uint64_t>(it, end);
         std::vector<Any> v;
-        v.resize(size);
+        v.reserve(count);
 
-        for (size_t i = 0; i < size; i++)
-            _begin = v[i].deserialize(_begin, _end);
-
+        // для каждого элемента вызываем Any::deserialize
+        for (uint64_t i = 0; i < count; ++i) 
+        {
+            Any a;
+            it = a.deserialize(it, end);
+            v.push_back(std::move(a));
+        }
         return v;
     }
 }

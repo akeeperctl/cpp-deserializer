@@ -1,6 +1,9 @@
 ﻿#include <iostream>
 #include "types/Any.h"
-
+#include "Serializator.h"
+#include <vector>
+#include <cstddef> // для std::byte
+#include <iomanip> // для std::hex
 int main()
 {
     ////Any
@@ -53,6 +56,35 @@ int main()
 
     setlocale(0, "RU");
     std::cout << "Инициализации всех типов прошли успешно\n";
+
+    Serializator s;
+    s.push(VectorType(StringType("qwerty"), IntegerType(100500)));
+    auto buffer = s.serialize();
+    auto result = Serializator::deserialize(buffer);
+
+    std::cout << "{";
+
+    for (size_t i = 0; i < buffer.size(); ++i)
+    {
+        // Преобразуем std::byte в unsigned char и выводим в шестнадцатичном формате
+        std::cout << "0x" << std::hex << std::setfill('0') << std::setw(2)
+            << static_cast<int>(std::to_integer<unsigned char>(buffer[i]));
+
+        // Добавляем запятую, если это не последний элемент
+        if (i < buffer.size() - 1)
+        {
+            std::cout << ",";
+        }
+
+        // Добавляем перенос строки каждые 8 элементов для удобства
+        if ((i + 1) % 8 == 0)
+        {
+            std::cout << "\n ";
+        }
+    }
+
+    std::cout << "}" << std::endl;
+    std::cout << bool(s.getStorage() == result);
 
     return 0;
 }
