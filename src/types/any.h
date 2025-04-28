@@ -59,7 +59,7 @@ public:
             throw std::runtime_error("Any: неизвестный TypeId");
         }
 
-        return _begin; // Возвращаем итератор, указывающий на конец десериализации
+        return _begin;
     }
     TypeId getPayloadTypeId() const
     {
@@ -88,7 +88,6 @@ public:
             return std::get<static_cast<size_t>(kId)>(m_payload);
         }
 
-        // Исключение, если тип не совпадает
         throw std::bad_variant_access();
     }
 
@@ -117,8 +116,17 @@ private:
     Payload m_payload;
 };
 
+/// <summary>
+/// Дополнение для buffer.
+/// Включает в себя методы, где необходим полный класс Any
+/// </summary>
 namespace buffer 
 {
+    /// <summary>
+    ///  Записывает в буфер байты из std::vector<Any>
+    /// </summary>
+    /// <param name="buf"></param>
+    /// <param name="v"></param>
     template<>
     inline void writeLE(type& buf, const std::vector<Any>& v) 
     {
@@ -130,6 +138,12 @@ namespace buffer
             a.serialize(buf);
     }
 
+    /// <summary>
+    /// Считывание только для std::vector<Any>
+    /// </summary>
+    /// <param name="it"></param>
+    /// <param name="end"></param>
+    /// <returns></returns>
     template<>
     inline std::vector<Any> _readLE(iter& it, iter& end) 
     {

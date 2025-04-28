@@ -35,6 +35,7 @@ class SerializableValue
 {
 public:
     using value_type = T;
+    // type_id для проверок в compile time
     static const TypeId type_id = id;
 
     explicit SerializableValue() : m_typeId(static_cast<Id>(id)), m_value{} {};
@@ -76,5 +77,7 @@ public:
 
 protected:
     T m_value;
+
+    //typeId для runtime
     Id m_typeId;
 };

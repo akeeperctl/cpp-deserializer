@@ -21,7 +21,11 @@ public:
 
 namespace buffer
 {
-    // Перегрузка для std::string
+    /// <summary>
+    /// Записывает в буфер байты только из строки
+    /// </summary>
+    /// <param name="buf"></param>
+    /// <param name="s"></param>
     template<>
     inline void writeLE(type& buf, const std::string& s)
     {
@@ -29,7 +33,13 @@ namespace buffer
         auto ptr = reinterpret_cast<const std::byte*>(s.data());
         buf.insert(buf.end(), ptr, ptr + s.size());
     }
-
+    
+    /// <summary>
+    /// Считывает из буфера байты только в строку
+    /// </summary>
+    /// <param name="it"></param>
+    /// <param name="end"></param>
+    /// <returns></returns>
     template<>
     inline std::string _readLE(iter& it, iter& end)
     {

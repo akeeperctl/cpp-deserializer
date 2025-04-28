@@ -12,22 +12,27 @@ namespace buffer
     using type = std::vector<std::byte>;
     using iter = type::const_iterator;
 
-    // Для тривиальных типов
-    template<typename U>
-    inline void writeLE(type& buf, const U& v) 
+    /// <summary>
+    /// Записывает в буфер байты любого типа данных.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="buf"></param>
+    /// <param name="v"></param>
+    template<typename T>
+    inline void writeLE(type& buf, const T& v) 
     {
         auto ptr = reinterpret_cast<const std::byte*>(&v);
-        buf.insert(buf.end(), ptr, ptr + sizeof(U));
+        buf.insert(buf.end(), ptr, ptr + sizeof(T));
     }
 
     /// <summary>
-    /// Считывает XType из буфера и возвращает значение в XType типе
+    /// Считывает XType из буфера и возвращает значение в XType типе.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="it"></param>
     /// <param name="end"></param>
     /// <returns></returns>
-    template<typename T>
+    template<typename T, typename = std::enable_if_t<is_serializable<T>::value>>
     T read(buffer::iter& it, buffer::iter& end)
     {
         using Decayed = std::decay_t<T>;

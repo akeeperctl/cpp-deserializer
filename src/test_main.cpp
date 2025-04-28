@@ -53,9 +53,7 @@ int main()
     std::cout << "Инициализации всех типов прошли успешно\n";
 
     Serializator s;
-    //s.push(VectorType(StringType("qwerty"), IntegerType(100500)));
-
-
+    s.push(VectorType(StringType("qwerty"), IntegerType(100500)));
     s.push(VectorType(IntegerType(100500), IntegerType(100500), IntegerType(100500)));
     s.push(VectorType(StringType("invector")));
     s.push(StringType("qwerty"));

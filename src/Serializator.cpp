@@ -18,32 +18,14 @@ std::vector<Any> Serializator::deserialize(const buffer::type& _val)
     std::vector<Any> result;
     auto it = _val.cbegin();
     auto end = _val.cend();
-
     auto size = buffer::_readLE<Id>(it, end);
+
     result.reserve(size);
 
     for (uint64_t i = 0; i < size; ++i)
     {
-        auto typeId = static_cast<TypeId>(buffer::_readLE<Id>(it, end));
         Any value;
-
-        switch (typeId) 
-        {
-        case TypeId::Uint:
-            value = Any(buffer::read<IntegerType>(it, end));
-            break;
-        case TypeId::Float:
-            value = Any(buffer::read<FloatType>(it, end));
-            break;
-        case TypeId::String:
-            value = Any(buffer::read<StringType>(it, end));
-            break;
-        case TypeId::Vector:
-            value = Any(buffer::read<VectorType>(it, end));
-            break;
-        default:
-            throw std::runtime_error("Serializator: неизвестный TypeId");
-        }
+        value.deserialize(it, end);
         result.push_back(std::move(value));
     }
 
