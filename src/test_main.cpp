@@ -31,6 +31,28 @@ int main()
     const std::string s3val = "mech";
     StringType s3(s3val);
     StringType s4(std::string("bibaboba"));
+    StringType s5 = "bibaiba";
+
+    //https://en.cppreference.com/w/cpp/string/basic_string/basic_string
+    StringType sx_3(4, '=');
+
+    char mutable_c_str[] = "another C-style string";
+    StringType sx_4(std::begin(mutable_c_str) + 8, std::end(mutable_c_str) - 1);
+    StringType sx_6("C-style string", 7);
+    StringType sx_7("C-style\0 string");
+
+    std::string const other11("Exemplar");
+    StringType sx_11(other11);
+    StringType sx_12(std::string("C++ by ") + std::string("example"));
+
+    std::string const other15("Mutatis Mutandis");
+    StringType sx_15(other15, 8);
+
+    std::string const other17("Exemplary");
+    StringType sx_17(other17, 0, other17.length() - 1);
+
+    StringType sx_19 = { 'C', '-', 's', 't', 'y', 'l', 'e' };
+    //~https://en.cppreference.com/w/cpp/string/basic_string/basic_string
 
     // VectorType — из ссылок
     VectorType v1(i1, f1, s1);

@@ -35,26 +35,41 @@ class SerializableValue
 {
 public:
     using value_type = T;
-    // type_id для проверок в compile time
     static const TypeId type_id = id;
 
-    explicit SerializableValue() : m_typeId(static_cast<Id>(id)), m_value{} {};
+    explicit SerializableValue() : m_value{} {};
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="U"></typeparam>
+    /// <typeparam name=""></typeparam>
+    /// <param name="_value"></param>
     template<typename U, typename = std::enable_if_t<std::is_convertible_v<U, T>>>
-    explicit SerializableValue(U&& _value)
-        : m_value(std::forward<U>(_value)),
-        m_typeId(static_cast<Id>(id))
-    {};
+    explicit SerializableValue(U&& _value) : m_value(std::forward<U>(_value)) {};    
+    
+    /// <summary>
+    ///  Проверяем, чтобы кучей аргументов сразу можно было сконструировать value_type
+    /// </summary>
+    /// <typeparam name="...Args"></typeparam>
+    /// <typeparam name=""></typeparam>
+    /// <param name="...args"></param>
+    template<typename... Args, typename = std::enable_if_t<std::is_constructible_v<value_type, Args...>>>
+    explicit SerializableValue(Args&&... args) : m_value(std::forward<Args>(args)...) {};
+
 
     void serialize(buffer::type& _buff) const 
     {
-        buffer::writeLE<Id>(_buff, m_typeId);
+        buffer::writeLE<Id>(_buff, static_cast<Id>(type_id));
         buffer::writeLE<T>(_buff, m_value);
     };
 
     buffer::iter deserialize(buffer::iter& _begin, buffer::iter& _end) 
     {
-        m_typeId = buffer::_readLE<Id>(_begin, _end);
+        // десериализуем id типа значения
+        buffer::_readLE<Id>(_begin, _end);
+
+        // десериализуем само значение
         m_value = buffer::_readLE<T>(_begin, _end);
 
         return _begin;
@@ -65,9 +80,9 @@ public:
         return m_value; 
     };
 
-    const TypeId getTypeId() const
+    constexpr TypeId getTypeId() const
     {
-        return static_cast<TypeId>(m_typeId);
+        return static_cast<TypeId>(type_id);
     }
 
     bool operator==(const SerializableValue& other) const 
@@ -77,7 +92,4 @@ public:
 
 protected:
     T m_value;
-
-    //typeId для runtime
-    Id m_typeId;
 };

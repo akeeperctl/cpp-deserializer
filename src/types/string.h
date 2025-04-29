@@ -9,11 +9,16 @@ public:
     using Parent = SerializableValue<TypeId::String, value_type>;
 
     explicit StringType() = default;
+    explicit StringType(value_type&& _val) : Parent(std::move(_val)) {};
+    StringType(const char* _val) : Parent(_val) {};
+    StringType(std::initializer_list<char>&& _val) : Parent(std::move(_val)) {};
+    StringType(size_t count, char ch) : Parent(count, ch) {};
 
-    explicit StringType(value_type&& _val)
-        : Parent(std::move(_val))
-    {
-    }
+    template<class InputIt>
+    StringType(InputIt&& first, InputIt&& last) : Parent(std::forward<InputIt>(first), std::forward<InputIt>(last)) {};
+    StringType(const char* s, size_t count) : Parent(s, count) {};
+    StringType(const value_type& s, size_t count) : Parent(s, count) {};
+    StringType(const value_type& s, size_t pos, size_t count) : Parent(s, pos, count) {};
 
     template<typename T, typename = std::enable_if_t<std::is_convertible_v<T, value_type>>>
     explicit StringType(T&& _value) : Parent(std::forward<T>(_value)) {};
@@ -28,7 +33,7 @@ namespace buffer
     /// <param name="s"></param>
     template<>
     inline void writeLE(type& buf, const std::string& s)
-    {
+    {;
         writeLE<uint64_t>(buf, s.size());
         auto ptr = reinterpret_cast<const std::byte*>(s.data());
         buf.insert(buf.end(), ptr, ptr + s.size());
