@@ -82,7 +82,7 @@ public:
 
     constexpr TypeId getTypeId() const
     {
-        return static_cast<TypeId>(type_id);
+        return type_id;
     }
 
     bool operator==(const SerializableValue& other) const 
